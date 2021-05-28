@@ -42,9 +42,7 @@
 
     - name: Ejecucion de healthcheck
       shell: 
-        cmd: '~vagrant/health-check.sh > output && mv output /var/www/html/health-checks' 
+        cmd: "~vagrant/health-check.sh > output_$(date '+%d%m%y_%H%M%S') && mv output_* /var/www/html/health-checks"
     - name: Colocar permisos selinux
-      file:
-        path: /var/www/html/health-checks/output
-        owner: apache
-        setype: httpd_sys_content_t
+      shell:
+        cmd: 'restorecon -Rv /var/www/html/health-checks'
