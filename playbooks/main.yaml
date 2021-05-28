@@ -1,0 +1,50 @@
+# Playbook de demo para setear un web server
+---
+
+- name: Apache server setup
+  hosts: nodes
+  become: yes
+  become_method: sudo
+  
+  tasks:
+    #- name: Adding user
+     # user:
+      #  name: developer
+       # group: wheel
+       # shell: /bin/bash          
+      #register: user_result
+
+    - name: Install Apache & Sysstat
+      yum:
+        name: 
+          - httpd
+          - sysstat
+          - curl
+        state: latest
+    
+    - name: Start Apache
+      service:
+        name: "httpd"
+        state: started
+
+    - name: Copia el archivo healt-check.sh para ejecucion
+      copy: 
+        src: files/health-check.sh
+        dest: ~vagrant/health-check.sh
+        owner: vagrant
+        mode: 0755
+    - name: Creacion de dir
+      file:
+        path: /var/www/html/health-checks
+        state: directory
+        owner: apache
+        setype: httpd_sys_content_t
+
+    - name: Ejecucion de healthcheck
+      shell: 
+        cmd: '~vagrant/health-check.sh > output && mv output /var/www/html/health-checks' 
+    - name: Colocar permisos selinux
+      file:
+        path: /var/www/html/health-checks/output
+        owner: apache
+        setype: httpd_sys_content_t
